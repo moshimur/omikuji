@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>今日のおみくじ</title>
+  <style>
+    :root {
+      --red: #b3262d;
+      --deep-red: #7d1720;
+      --gold: #c99b3b;
+      --paper: #fffdf7;
+      --ink: #332a27;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      overflow-x: hidden;
+      color: var(--ink);
+      font-family: "Yu Mincho", "Hiragino Mincho ProN", serif;
+      background:
+        radial-gradient(circle at 20% 15%, rgba(255,255,255,.75), transparent 24%),
+        repeating-linear-gradient(45deg, rgba(125,23,32,.035) 0 1px, transparent 1px 12px),
+        #f2e9d6;
+    }
+
+    .page {
+      width: min(92vw, 520px);
+      padding: 42px 0;
+      text-align: center;
+    }
+
+    .crest {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 14px;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--red);
+      border-radius: 50%;
+      color: var(--red);
+      font-size: 25px;
+      background: rgba(255,255,255,.35);
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--deep-red);
+      font-size: clamp(32px, 8vw, 48px);
+      letter-spacing: .16em;
+      text-indent: .16em;
+      font-weight: 700;
+    }
+
+    .lead {
+      margin: 9px 0 28px;
+      font-family: system-ui, sans-serif;
+      font-size: 13px;
+      letter-spacing: .12em;
+      color: #786963;
+    }
+
+    .omikuji {
+      position: relative;
+      min-height: 350px;
+      padding: 31px 34px 27px;
+      border: 1px solid rgba(125,23,32,.35);
+      background: var(--paper);
+      box-shadow: 0 16px 45px rgba(70,42,30,.14);
+    }
+
+    .omikuji::before,
+    .omikuji::after {
+      content: "";
+      position: absolute;
+      inset: 9px;
+      border: 1px solid var(--red);
+      pointer-events: none;
+    }
+
+    .omikuji::after {
+      inset: 15px;
+      border-color: rgba(201,155,59,.55);
+    }
+
+    .label {
+      position: relative;
+      z-index: 1;
+      display: inline-block;
+      padding: 3px 13px;
+      color: #fff;
+      background: var(--red);
+      font-size: 12px;
+      letter-spacing: .3em;
+      text-indent: .3em;
+    }
+
+    #result {
+      position: relative;
+      z-index: 1;
+      min-height: 120px;
+      margin: 18px 0 7px;
+      display: grid;
+      place-items: center;
+      color: var(--red);
+      font-size: clamp(60px, 17vw, 88px);
+      line-height: 1;
+      letter-spacing: .08em;
+      text-indent: .08em;
+      font-weight: 700;
+    }
+
+    #result.waiting {
+      color: #b9aca3;
+      font-size: 28px;
+      letter-spacing: .18em;
+    }
+
+    #message {
+      position: relative;
+      z-index: 1;
+      min-height: 55px;
+      margin: 0 auto 18px;
+      max-width: 340px;
+      font-size: 15px;
+      line-height: 1.85;
+    }
+
+    button {
+      position: relative;
+      z-index: 1;
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 36px;
+      color: #fff;
+      background: linear-gradient(135deg, #c7353d, var(--deep-red));
+      box-shadow: 0 7px 0 #5d1117, 0 12px 22px rgba(125,23,32,.22);
+      font: 700 16px system-ui, sans-serif;
+      letter-spacing: .12em;
+      cursor: pointer;
+      transition: transform .12s, box-shadow .12s;
+    }
+
+    button:hover { transform: translateY(-2px); }
+    button:active {
+      transform: translateY(5px);
+      box-shadow: 0 2px 0 #5d1117, 0 5px 10px rgba(125,23,32,.18);
+    }
+    button:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
+
+    .note {
+      margin-top: 20px;
+      color: #8d7d75;
+      font-family: system-ui, sans-serif;
+      font-size: 11px;
+      letter-spacing: .08em;
+    }
+
+    .revealed { animation: reveal .55s cubic-bezier(.2,.8,.2,1); }
+    .shaking { animation: shake .5s ease; }
+
+    @keyframes reveal {
+      0% { opacity: 0; transform: scale(.55) rotate(-5deg); filter: blur(5px); }
+      70% { transform: scale(1.08) rotate(1deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0); filter: blur(0); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: rotate(0); }
+      20% { transform: rotate(-1.5deg); }
+      40% { transform: rotate(1.5deg); }
+      60% { transform: rotate(-1deg); }
+      80% { transform: rotate(1deg); }
+    }
+
+    @media (max-width: 420px) {
+      .page { padding: 24px 0; }
+      .omikuji { min-height: 345px; padding-inline: 25px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="crest" aria-hidden="true">福</div>
+    <h1>おみくじ</h1>
+    <p class="lead">心を静めて、今日の運勢を占いましょう</p>
+
+    <section class="omikuji" id="omikuji" aria-live="polite">
+      <span class="label">今日の運勢</span>
+      <div id="result" class="waiting">運勢は…</div>
+      <p id="message">下のボタンを押して<br>おみくじを引いてください。</p>
+      <button id="drawButton" type="button">おみくじを引く</button>
+    </section>
+
+    <p class="note">何度でも引くことができます</p>
+  </main>
+
+  <script>
+    const fortunes = [
+      { name: "大吉", message: "願いごとは思いのままに。<br>笑顔がさらなる福を呼ぶでしょう。" },
+      { name: "中吉", message: "一歩ずつ進めば道は開けます。<br>身近な人への感謝を忘れずに。" },
+      { name: "小吉", message: "小さな幸せに恵まれる日。<br>焦らず自分のペースを大切に。" },
+      { name: "吉", message: "穏やかな運気です。<br>新しい挑戦に良い兆しがあります。" },
+      { name: "末吉", message: "今は力を蓄えるとき。<br>やがて良い流れが訪れるでしょう。" },
+      { name: "凶", message: "慎重に過ごせば災いは遠のきます。<br>今日は無理をせず、心を整えて。" }
+    ];
+
+    const result = document.getElementById("result");
+    const message = document.getElementById("message");
+    const button = document.getElementById("drawButton");
+    const omikuji = document.getElementById("omikuji");
+
+    button.addEventListener("click", () => {
+      const fortune = fortunes[Math.floor(Math.random() * fortunes.length)];
+
+      result.classList.remove("revealed", "waiting");
+      omikuji.classList.remove("shaking");
+      void result.offsetWidth;
+
+      result.textContent = fortune.name;
+      message.innerHTML = fortune.message;
+      button.textContent = "もう一度引く";
+      result.classList.add("revealed");
+      omikuji.classList.add("shaking");
+    });
+  </script>
+</body>
+</html>
